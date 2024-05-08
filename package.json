@@ -1,0 +1,17 @@
+{
+  "name": "CI_Project",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:HamadAbdulRazzaq/CI_Project.git",
+  "author": "Muhammad Jazzel Mehmood <jazzelmehmood4@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "nodemon": "^3.1.0"
+  },
+  "scripts": {
+    "server": "node index.js",
+    "dev": "nodemon index.js"
+  }
+}

@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>CI Project</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous" />
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Include noUiSlider library -->
+    <link href="//cdn.bootcss.com/noUiSlider/8.5.1/nouislider.min.css" rel="stylesheet">
+    <script src="//cdn.bootcss.com/noUiSlider/8.5.1/nouislider.js"></script>
+    <style>
+        body {
+            padding: 20px 200px;
+            overflow: hidden;
+        }
+
+        canvas {
+            background-color: #fff;
+            border-radius: 5px;
+        }
+
+
+
+        .tooltipdiv {
+            display: block;
+            position: absolute;
+            bottom: 35px;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 1px solid #D9D9D9;
+            border-radius: 3px;
+            background: #fff;
+            color: #000;
+            padding: 5px;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .noUi-value {
+            margin-top: 10px;
+        }
+
+        #sell,
+        #buy,
+        #profit {
+            height: 200px;
+            margin: auto;
+        }
+
+        #myChart {
+            margin: auto;
+            height: 500px !important;
+        }
+    </style>
+</head>
+
+<body>
+    <center>
+        <h1>Reinforcement Learning in Stock Market - <%= type %>
+        </h1>
+    </center>
+
+    <div class="row">
+        <div class="col">
+            <canvas id="buy"></canvas>
+        </div>
+        <div class="col">
+            <canvas id="sell"></canvas>
+        </div>
+        <div class="col">
+            <canvas id="profit"></canvas>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <canvas id="myChart"></canvas>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-2"></div>
+        <div class="col-6">
+            <div class="slider-range m-b-20"></div>
+        </div>
+        <div class="col-2">
+            <button class="btn btn-dark w-100" id="play-animation">Play</button>
+        </div>
+        <div class="col-2"></div>
+    </div>
+
+    <script>
+        let data = JSON.parse('<%- JSON.stringify(jsonData) %>');
+
+        const labels = Object.keys(data).map((key) => Number(key));
+
+        const initialData = data[0];
+
+        const profit = "test"
+
+        let ctx = document.getElementById('myChart').getContext('2d');
+        let ctx2 = document.getElementById('sell').getContext('2d');
+        let ctx3 = document.getElementById('buy').getContext('2d');
+        let ctx4 = document.getElementById('profit').getContext('2d');
+
+        let sellChart = new Chart(ctx2, {
+            type: 'line',
+            data: {
+                labels: Array.from({ length: initialData.data.length }, (_, i) => i + 1),
+                datasets: [{
+                    label: 'Data Input',
+                    data: null,
+                    borderColor: 'red',
+                    borderWidth: 2,
+                    fill: false
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: "Sell State"
+                    },
+                },
+
+                legend: {
+                    display: false
+                },
+                tooltips: {
+                    enabled: false
+                },
+                elements: {
+                    point: {
+                        radius: 0
+                    }
+                }
+            }
+        });
+
+        let buyChart = new Chart(ctx3, {
+            type: 'line',
+            data: {
+                labels: Array.from({ length: initialData.data.length }, (_, i) => i + 1),
+                datasets: [{
+                    label: 'Data Input',
+                    data: null,
+                    borderColor: 'red',
+                    borderWidth: 2,
+                    fill: false
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: "Buy State"
+                    },
+                },
+
+                legend: {
+                    display: false
+                },
+                tooltips: {
+                    enabled: false
+                },
+                elements: {
+                    point: {
+                        radius: 0
+                    }
+                }
+            }
+        });
+
+        let myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: Array.from({ length: initialData.data.length }, (_, i) => i + 1),
+                datasets: [{
+                    label: 'Data Input',
+                    data: initialData.data,
+                    borderColor: 'red',
+                    borderWidth: 2,
+                    fill: false
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Episode: Total gains: ' + profit
+                    },
+                },
+
+                legend: {
+                    display: false
+                },
+                tooltips: {
+                    enabled: false
+                },
+                elements: {
+                    point: {
+                        radius: 0
+                    }
+                }
+            }
+        });
+
+        let profitChart = new Chart(ctx4, {
+            type: 'line',
+            data: {
+                labels: null,
+                datasets: [{
+                    label: 'Data Input',
+                    data: null,
+                    borderColor: 'red',
+                    borderWidth: 2,
+                    fill: false
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: "Profit"
+                    },
+                },
+
+                legend: {
+                    display: false
+                },
+                tooltips: {
+                    enabled: false
+                },
+                elements: {
+                    point: {
+                        radius: 0
+                    }
+                }
+            }
+        });
+
+        let rangeSlider = document.querySelector(".slider-range");
+
+        noUiSlider.create(rangeSlider, {
+            start: labels[0],
+            step: 1,
+            range: {
+                min: [0],
+                max: labels.length - 1
+            },
+            connect: "lower",
+            pips: {
+                mode: 'steps',
+                density: labels.length / 2
+            }
+        });
+
+
+        rangeSlider.noUiSlider.on('update', function (values, handle) {
+            let index = parseInt(values[handle]);
+            let newData = data[index];
+
+            myChart.data.datasets[0].label = 'Data ' + index;
+            let data_input = data[index].data;
+            let states_buy = data[index].buy;
+            let states_sell = data[index].sell;
+            let profit = data[index].profit;
+            let total_profit = data[index].total_profit;
+
+
+            myChart.data.datasets = myChart.data.datasets.slice(0, 1);
+            sellChart.data.datasets = sellChart.data.datasets.slice(0, 1);
+            buyChart.data.datasets = buyChart.data.datasets.slice(0, 1);
+            profitChart.data.datasets = profitChart.data.datasets.slice(0, 1);
+
+            myChart.data.datasets[0].data = data_input;
+            profitChart.data.labels = Array.from({ length: profit.length }, (_, i) => i + 1);
+            profitChart.data.datasets[0].data = profit;
+
+            states_sell.forEach(function (index) {
+                sellChart.data.datasets.push({
+                    label: '',
+                    data: [{
+                        x: index + 1,
+                        y: data_input[index]
+                    }],
+                    backgroundColor: 'magenta',
+                    borderColor: 'magenta',
+                    pointRadius: 2,
+                    pointStyle: 'dot',
+                    borderWidth: 0,
+                    showLine: false
+                });
+            });
+
+            states_buy.forEach(function (index) {
+                buyChart.data.datasets.push({
+                    label: '',
+                    data: [{
+                        x: index + 1,
+                        y: data_input[index]
+                    }],
+                    backgroundColor: 'black',
+                    borderColor: 'black',
+                    pointRadius: 2,
+                    pointStyle: 'dot',
+                    borderWidth: 0,
+                    showLine: false
+                });
+            });
+
+            states_sell.forEach(function (index) {
+                myChart.data.datasets.push({
+                    label: '',
+                    data: [{
+                        x: index + 1,
+                        y: data_input[index]
+                    }],
+                    backgroundColor: 'magenta',
+                    borderColor: 'magenta',
+                    pointRadius: 10,
+                    pointStyle: 'triangle',
+                    borderWidth: 0,
+                    showLine: false
+                });
+            });
+
+            states_buy.forEach(function (index) {
+                myChart.data.datasets.push({
+                    label: '',
+                    data: [{
+                        x: index + 1,
+                        y: data_input[index]
+                    }],
+                    backgroundColor: 'black',
+                    borderColor: 'black',
+                    pointRadius: 10,
+                    pointStyle: 'dot',
+                    borderWidth: 0,
+                    showLine: false
+                });
+            });
+
+
+            myChart.options.plugins.title.text = `Episode: ${index} - Total gains: Rs. ${Math.trunc(total_profit)}`
+
+            myChart.update();
+            sellChart.update();
+            buyChart.update();
+            profitChart.update();
+
+        });
+
+        const playButton = document.getElementById('play-animation');
+
+        let isPlaying = false;
+        let interval;
+        const initAnimation = () => {
+
+
+            if (isPlaying) {
+                clearInterval(interval);
+                playButton.innerHTML = 'Play';
+                playButton.classList.remove('btn-danger');
+                playButton.classList.add('btn-info');
+                isPlaying = false;
+                return;
+            }
+            else {
+                playButton.innerHTML = 'Stop';
+                playButton.classList.remove('btn-info');
+                playButton.classList.add('btn-danger');
+                let index = 0;
+
+                interval = setInterval(() => {
+                    if (index >= labels.length - 1) {
+                        index = 0;
+                    }
+                    rangeSlider.noUiSlider.set(index);
+                    index++;
+                }, 1000);
+
+                isPlaying = true;
+            }
+
+
+        }
+
+        playButton.addEventListener('click', initAnimation);
+
+
+
+
+
+    </script>
+</body>
+
+</html>
